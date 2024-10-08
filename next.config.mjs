@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   basePath: "/data-register-app-dev/docs",
+  distDir: 'docs',
   output: "export",
   reactStrictMode: true,
   webpack: (config) => {
