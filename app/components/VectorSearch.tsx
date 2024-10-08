@@ -5,7 +5,8 @@ import { useState, useEffect } from 'react';
 import SearchResults from './SearchResults';
 
 // Types
-import { propertyNames, WBEntity } from "@/app/services/MediaWikiAPI";
+import { WBEntity } from "@/app/services/MediaWikiAPI";
+import { cosinesim, generateTextStructureForEmbeddings, getEmbeddings } from '../services/VectorSearchHelper';
 interface CEWBEntity extends WBEntity {
     embeddings?: number[];
 }
@@ -29,24 +30,51 @@ const VectorSearch = (props:{keywords:string}) => {
 
         setBusy(true);
 
-        const storedData:CEWBEntity[] = JSON.parse(sessionStorage.getItem('cewbdata') as string);
+        const generateEmbeddings = async () => {
+            const embeddings = await getEmbeddings(generateTextStructureForEmbeddings(storedData))
+            return embeddings
+        }
 
+        
+
+        const storedData:CEWBEntity[] = JSON.parse(sessionStorage.getItem('cewbdata') as string);
+        // const tempText = generateTextStructureForEmbeddings(storedData)
         // Add embeddings if not present already
         const hasEmbeddings = storedData.filter((o) => {
             return o.hasOwnProperty('embeddings');
         }).length > 0;
         if (!hasEmbeddings) {
-            // Append embeddings to stored data
-            storedData.map((item) => {
-                item.embeddings = [0.027038993313908577, 0.09814383834600449, 0.06750451773405075];
-            });
-            // Save to session storage
-            sessionStorage.setItem('cewbdata', JSON.stringify(storedData));
+            generateEmbeddings().then(embeddings => {
+                storedData.map((item, index) => {
+                    item.embeddings = embeddings[index]
+                })
+                sessionStorage.setItem('cewbdata', JSON.stringify(storedData));
+            })
         }
 
         const search = async (keywords:string) => {
 
-            setData([]);
+            getEmbeddings([keywords]).then(searchEmbedding => {
+                console.log(searchEmbedding[0])
+
+                const storedData:CEWBEntity[] = JSON.parse(sessionStorage.getItem('cewbdata') as string);
+                
+                const cosineSims: { id: string; cosine: number }[] = []
+                storedData.forEach((dataItem)=>{
+                    cosineSims.push({id: dataItem.id, cosine: cosinesim(dataItem.embeddings!, searchEmbedding[0]) })
+                })
+                
+                cosineSims.sort((a, b) => (a.cosine < b.cosine ? 1 : -1))
+                
+                const onlyIds: string[] = []
+                cosineSims.forEach((consineItem) => {
+                    onlyIds.push(consineItem.id)
+                })
+
+                console.log(cosineSims)
+                console.log(onlyIds)
+                setData(hydrateEntities(onlyIds));
+            })
             setBusy(false);
 
         }
