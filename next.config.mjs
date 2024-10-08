@@ -1,9 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   basePath: "/data-register-app-dev",
-  distDir: 'docs',
   output: "export",
   reactStrictMode: true,
+  images: {
+    unoptimized: true,
+  },
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
