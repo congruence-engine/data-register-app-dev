@@ -55,7 +55,6 @@ const FullTextSearch = (props:{ keywords:string; }) => {
             }
             Object.assign(params, {srsearch: keywords});
             params = {...defaults, ...params};
-
             setData(hydrateEntities(await getItems(params as {srsearch: string; srnamespace: number;})));
             setBusy(false);
         }

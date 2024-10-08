@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  basePath: "/data-register-app-dev/docs",
+  basePath: "/data-register-app-dev",
   distDir: 'docs',
   output: "export",
   reactStrictMode: true,
