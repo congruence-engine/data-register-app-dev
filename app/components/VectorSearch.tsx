@@ -2,42 +2,26 @@
 
 import { useState, useEffect } from 'react';
 
-import SearchResults from './SearchResults';
-
-// Types
-import { WBEntity } from "@/app/services/MediaWikiAPI";
+import { CEEntity, getStoredData, setStoredData, hydrateEntities } from '@/app/components/Data';
 import { cosinesim, generateTextStructureForEmbeddings, getEmbeddings } from '../services/VectorSearchHelper';
-interface CEWBEntity extends WBEntity {
-    embeddings?: number[];
-}
+import SearchResults from './SearchResults';
+import { CSSLoader } from '@/app/components/Loader';
 
-const hydrateEntities = (entityIDs:string[]):CEWBEntity[] => {
+const VectorSearch = (props:{keywords:string; onErrorHandler:any;}) => {
 
-    const storedData:CEWBEntity[] = JSON.parse(sessionStorage.getItem('cewbdata') as string);
-
-    return entityIDs.map((id) => {
-        return storedData.find(item => item.id === id);
-    }) as CEWBEntity[];
-
-}
-
-const VectorSearch = (props:{keywords:string}) => {
-
-    const [data, setData] = useState<CEWBEntity[]>([]);
-    const [isBusy, setBusy] = useState(false);
+    const [data, setData] = useState<CEEntity[]>([]);
+    const [isLoading, setLoading] = useState(true);
 
     useEffect(() => {
 
-        setBusy(true);
+        setLoading(true);
 
         const generateEmbeddings = async () => {
             const embeddings = await getEmbeddings(generateTextStructureForEmbeddings(storedData))
             return embeddings
         }
 
-        
-
-        const storedData:CEWBEntity[] = JSON.parse(sessionStorage.getItem('cewbdata') as string);
+        const storedData:CEEntity[] = getStoredData();
         // const tempText = generateTextStructureForEmbeddings(storedData)
         // Add embeddings if not present already
         const hasEmbeddings = storedData.filter((o) => {
@@ -48,7 +32,7 @@ const VectorSearch = (props:{keywords:string}) => {
                 storedData.map((item, index) => {
                     item.embeddings = embeddings[index]
                 })
-                sessionStorage.setItem('cewbdata', JSON.stringify(storedData));
+                setStoredData(storedData);
             })
         }
 
@@ -57,7 +41,7 @@ const VectorSearch = (props:{keywords:string}) => {
             getEmbeddings([keywords]).then(searchEmbedding => {
                 console.log(searchEmbedding[0])
 
-                const storedData:CEWBEntity[] = JSON.parse(sessionStorage.getItem('cewbdata') as string);
+                const storedData:CEEntity[] = getStoredData();
                 
                 const cosineSims: { id: string; cosine: number }[] = []
                 storedData.forEach((dataItem)=>{
@@ -74,21 +58,23 @@ const VectorSearch = (props:{keywords:string}) => {
                 console.log(cosineSims)
                 console.log(onlyIds)
                 setData(hydrateEntities(onlyIds));
+                setLoading(false);
             })
-            setBusy(false);
 
         }
 
         if (props.keywords?.length) search(props.keywords);
         else {
             setData(storedData);
-            setBusy(false);
+            setLoading(false);
         }
 
     }, [props]);
 
+    if (isLoading) return <CSSLoader style='dotdotdot' message='Generating vector embeddings, may take a while...'/>;
+
     return (
-        <SearchResults keywords={props.keywords} data={data} isbusy={isBusy}/>
+        <SearchResults keywords={props.keywords} data={data}/>
     );
 
 }

@@ -1,29 +1,29 @@
 /*************************
-    Layout
+    Variables
+ *************************/
+
+// Colors
+$accent-color: rgb(236 72 153);
+$accent-color-tailwind: "pink-500";
+
+// Icons
+$search-icon: "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke-width%3D%222%22%20stroke%3D%22%23ffffff%22%3E%0A%20%20%20%20%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22m21%2021-5.197-5.197m0%200A7.5%207.5%200%201%200%205.196%205.196a7.5%207.5%200%200%200%2010.607%2010.607Z%22%2F%3E%0A%3C%2Fsvg%3E";
+$close-icon: "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke-width%3D%222.25%22%20stroke%3D%22black%22%3E%0A%20%20%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M6%2018%2018%206M6%206l12%2012%22%20%2F%3E%0A%3C%2Fsvg%3E";
+
+/*************************
+    Scaffolding
  *************************/
 
 html {
-
     body {
-
         margin: 0;
 
-        header,
+        
         main,
         footer {
             padding: 2rem;
         }
-        
-        header {
-            background-color: rgb( 230, 230, 230);
-        }
-        
-        footer {
-            background-color: rgb( 230, 230, 230);
-        }
-
     }
-
 }
 
 /*************************
@@ -41,8 +41,8 @@ html {
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --background: #ededed;
-        --foreground: #171717;
+        --background: #0a0a0a;
+        --foreground: #ededed;
     }
 }
 
@@ -62,133 +62,168 @@ body {
 body {
     @apply font-sans font-light leading-normal;
 }
+header {
+    @apply py-5;
+    background-color: var(--foreground);
+}
+
+footer {
+    background-color: var(--foreground);
+}
 
 .container {
     @apply mx-auto;
 }
 
-h1.home {
-    @apply sr-only;
+h1 {
+    @apply text-5xl mb-12;
+}
+
+input,
+select,
+button {
+    @apply focus:ring-0;
 }
 
 #search {
-    
-    // Layout
-    @apply flex items-end mb-6;
 
-    .fieldgroup {
-        &:nth-child(2) {
-            @apply grow;
+    &> form {
+
+        // Layout
+
+        @apply flex items-end mb-6;
+        
+        .fieldgroup {
+            &:nth-child(2) {
+                @apply grow;
+            }
         }
-    }
 
-    // Form elements
-    label {
-        @apply block mb-1 pl-3;
-    }
-    .label {
-        @apply sr-only;
-    }
-    input[type='search'],
-    button[type='submit'] {
-        @apply form-input;
-    }
-    select {
-        @apply form-select;
-    }
-    input[type='search'],
-    select,
-    button[type='submit'] {
-        @apply border-0 focus:ring-0;
-    }
-    input[type='search'] {
-        @apply w-full pr-1;
-    }
-    button[type='submit'] {
-        @apply w-10 h-10;
-        .search-icon {
-            @apply w-5 pt-0.5;
+        // Appearance
+
+        label {
+            @apply block mb-1 pl-3 text-sm;// text-gray-600;
         }
-    }
-
-    @screen md {
-        input[type='search'] {
-            @apply pr-1 md:h-16;
+        input[type='search'],
+        button[type='submit'] {
+            @apply form-input;
         }
         select {
-            @apply md:h-16;
+            @apply form-select;
         }
+        input[type='search'],
+        select,
         button[type='submit'] {
-            @apply w-16 h-16;
+            @apply border-0;
         }
-    }
 
-    // Typography
-    label {
-        @apply text-sm text-gray-600;
-    }
-    button[type='submit'] {
-        position: relative;
-        &:before {
-            content: "";
-            background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke-width%3D%222%22%20stroke%3D%22black%22%3E%0A%20%20%20%20%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22m21%2021-5.197-5.197m0%200A7.5%207.5%200%201%200%205.196%205.196a7.5%207.5%200%200%200%2010.607%2010.607Z%22%2F%3E%0A%3C%2Fsvg%3E");
-            background-size: 40%;
-            background-repeat: no-repeat;
-            background-position: 50% 50%;
-            position: absolute;
-            top: 0px;
-            right: 0px;
-            bottom: 0px;
-            left: 0px;
-            opacity: .4;
+        input[type='search'] {
+            @apply w-full pr-4;
+        }
+
+        button[type='submit'] {
+            @apply w-12 h-10;
+
+            position: relative;
             transition: 0.3s;
-        }
-        &:hover {
+            background-color: var(--foreground);
+            color: var(--background);
+
             &:before {
-                opacity: 1;
+                content: "";
+                background-image: url($search-icon);
+                background-size: 40%;
+                background-repeat: no-repeat;
+                background-position: 50% 50%;
+                position: absolute;
+                top: 0px;
+                right: 0px;
+                bottom: 0px;
+                left: 0px;
+                opacity: .6;
+                transition: 0.3s;
+            }
+            &:hover {
+                @apply bg-#{$accent-color-tailwind}; 
+                &:before {
+                    opacity: 1;
+                }
+            }
+
+            .btntext {
+                @apply sr-only;
+            }
+        }
+
+        @screen md {
+            input[type='search'],
+            select,
+            button[type='submit'] {
+                @apply h-16;
+            }
+            button[type='submit'] {
+                @apply w-16 px-6;
             }
         }
     }
 
-}
+    #search-results {
 
-@keyframes fadein {
-    50% {opacity: 1;}
-}
+        // Layout
+        
+        &> #search-results-header {
+            
+            @apply flex;
 
-@keyframes fadeout {
-    50% {opacity: 0.4;}
-}
-
-#search-results {
-
-    // Layout
-    ol, ul {
-        list-style-type: none;
-        padding-left: 0;
-    }
-
-    // Layout: Tiled
-    ol.tile {
-
-        @apply grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4;
-
-        &> li {
-            @apply px-4 border-2 border-solid border-gray-200;
-            border-color: rgb( 230, 230, 230);
+            #display-status {
+                @apply grow;
+            }
         }
 
-        .item {
+        // Appearance
+
+        &> #search-results-header {
+            #display-options {
+                p {
+                    @apply inline-block mr-1;
+                }
+                button {
+                    @apply form-input px-2 py-0.5;
+                }
+                button + button {
+                    @apply ml-0.5;
+                }
+                
+                button {
+                    position: relative;
+                    background-color: var(--foreground);
+                    color: var(--background);
+                    border: none;
+                    transition: 0.3s;
+                }
+                
+                button:hover,
+                button.active {
+                    @apply bg-#{$accent-color-tailwind};
+                }
+                button:focus { outline: none; }
+
+            }
+        }
+
+        &> #search-results-content {
+
             // Layout
-            .label {
-                @apply min-h-fit md:min-h-24;
+            ol, ul {
+                list-style-type: none;
+                padding-left: 0;
             }
-            .description {
-                @apply min-h-fit md:min-h-36;
-            }
-        }
 
+        }
     }
+}
+
+#search-results-content {
 
     // Layout: List
     ol.list {
@@ -221,6 +256,28 @@ h1.home {
 
     }
 
+    // Layout: Tiled
+    ol.tile {
+
+        @apply grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4;
+
+        &> li {
+            @apply px-4 border-2 border-solid border-gray-200;
+            border-color: rgb( 230, 230, 230);
+        }
+
+        .item {
+            // Layout
+            .label {
+                @apply min-h-fit md:min-h-24;
+            }
+            .description {
+                @apply min-h-fit md:min-h-36;
+            }
+        }
+
+    }
+
     .item {
         //Typography
         .label {
@@ -233,7 +290,8 @@ h1.home {
             .value {
                 @apply mt-0;
                 a {
-                    @apply text-current decoration-gray-500 hover:text-pink-500 hover:decoration-pink-500;
+                    @apply text-current decoration-gray-500 hover:text-#{$accent-color-tailwind} hover:decoration-#{$accent-color-tailwind};
+                    transition: 0.25s;
                 }
             }
         }
@@ -262,7 +320,7 @@ input[type="search"]::-webkit-search-cancel-button {
     width: 1em;
     margin-left: 0.5em;
     border-radius: 50em;
-    background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke-width%3D%222.25%22%20stroke%3D%22black%22%3E%0A%20%20%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M6%2018%2018%206M6%206l12%2012%22%20%2F%3E%0A%3C%2Fsvg%3E") no-repeat 50% 50%;
+    background: url($close-icon) no-repeat 50% 50%;
     background-size: contain;
     opacity: 0;
     pointer-events: none;
@@ -281,27 +339,53 @@ input[type="search"].dark::-webkit-search-cancel-button {
 // https://css-loaders.com/
 .loader {
 
-    margin-top: 30vh;
+    margin-top: 25vh;
     text-align: center;
 
-    .dots {
+    .bouncydots {
         display: inline-block;
         width: 60px;
         aspect-ratio: 2;
-        --_g: no-repeat radial-gradient(circle closest-side,#f472b6 90%,#0000);
+        --_g: no-repeat radial-gradient(circle closest-side, $accent-color 90%,#0000);
         background: 
             var(--_g) 0%   50%,
             var(--_g) 50%  50%,
             var(--_g) 100% 50%;
         background-size: calc(100%/3) 50%;
-        animation: hoppindots 1s infinite linear;
+        animation: bouncydots 1s infinite linear;
+    }
+
+    .blinkydots {
+        display: inline-block;
+        width: 15px;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        animation: blinkydots 1s infinite linear alternate;
+    }
+
+    .dotdotdot {
+        display: inline-block;
+        width: 60px;
+        aspect-ratio: 4;
+        background: radial-gradient(circle closest-side,#000 90%,#0000) 0/calc(100%/3) 100% space;
+        clip-path: inset(0 100% 0 0);
+        animation: dotdotdot 1s steps(4) infinite;
     }
 
 }
 
-@keyframes hoppindots {
+@keyframes bouncydots {
     20%{background-position:0%   0%, 50%  50%,100%  50%}
     40%{background-position:0% 100%, 50%   0%,100%  50%}
     60%{background-position:0%  50%, 50% 100%,100%   0%}
     80%{background-position:0%  50%, 50%  50%,100% 100%}
 }
+
+@keyframes blinkydots {
+    0%  {box-shadow: 20px 0 #000, -20px 0 $accent-color; background: #000 }
+    33% {box-shadow: 20px 0 #000, -20px 0 $accent-color; background: $accent-color}
+    66% {box-shadow: 20px 0 $accent-color, -20px 0 #000; background: $accent-color}
+    100%{box-shadow: 20px 0 $accent-color, -20px 0 #000; background: #000 }
+}
+
+@keyframes dotdotdot {to{clip-path: inset(0 -34% 0 0)}}

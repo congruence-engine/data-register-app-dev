@@ -1,7 +1,7 @@
 "use client";
 import { pipeline } from "@xenova/transformers";
 import { env } from "@xenova/transformers";
-import { WBEntity } from "./MediaWikiAPI";
+import { Entity } from "./MediaWikiAPI";
 env.allowLocalModels = false;
 env.allowRemoteModels = true;
 
@@ -41,10 +41,10 @@ export function cosinesim(A: number[], B: number[]) {
   return similarity;
 }
 
-export function generateTextStructureForEmbeddings(wikiBaseItems: WBEntity[]): string[] {
+export function generateTextStructureForEmbeddings(wikiBaseItems: Entity[]): string[] {
   const embeddingTextStructure: string[] = [];
 
-  wikiBaseItems.forEach((item: WBEntity) => {
+  wikiBaseItems.forEach((item: Entity) => {
     let tempTextString = item.label ? item.label.trim() : "";
     // if (item.datasetHeldBy.value.trim()) {
     //   tempTextString = tempTextString + " " + item.datasetHeldBy.value.trim();

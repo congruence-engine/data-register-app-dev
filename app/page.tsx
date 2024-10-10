@@ -1,16 +1,10 @@
 'use client';
 
-import Search from "./components/Search";
-import { Suspense } from "react";
+import Search from '@/app/components/Search';
 
 const Home = () => {
   return (
-    <>
-      <h1 className='home'>Search</h1>
-      <Suspense>
-        <Search />
-      </Suspense>
-    </>
+    <Search/>
   );
 }
 

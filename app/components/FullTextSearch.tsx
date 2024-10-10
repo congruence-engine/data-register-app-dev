@@ -2,33 +2,21 @@
 
 import { useState, useEffect } from 'react';
 
-import { getItems } from "@/app/services/MediaWikiAPI";
-import SearchResults from './SearchResults';
+import { getItems, isWBError } from "@/app/services/MediaWikiAPI";
+import { CEEntity, getStoredData, hydrateEntities } from '@/app/components/Data';
+import SearchResults from '@/app/components/SearchResults';
+import { CSSLoader } from '@/app/components/Loader';
 
-// Types
-import { WBEntity } from "@/app/services/MediaWikiAPI";
-interface CEWBEntity extends WBEntity {
-    embeddings?: number[];
-}
+// Stuff that make stuff happen
 
-const hydrateEntities = (entityIDs:string[]):CEWBEntity[] => {
+const FullTextSearch = (props:{keywords:string; onErrorHandler:any;}) => {
 
-    const storedData:CEWBEntity[] = JSON.parse(sessionStorage.getItem('cewbdata') as string);
-
-    return entityIDs.map((id) => {
-        return storedData.find(item => item.id === id);
-    }) as CEWBEntity[];
-
-}
-
-const FullTextSearch = (props:{ keywords:string; }) => {
-
-    const [data, setData] = useState<CEWBEntity[]>([]);
-    const [isBusy, setBusy] = useState(true);
+    const [data, setData] = useState<CEEntity[]>([]);
+    const [isLoading, setLoading] = useState(true);
 
     useEffect(() => {
         
-        setBusy(true);
+        setLoading(true);
 
         const search = async (keywords:string) => {
 
@@ -55,21 +43,28 @@ const FullTextSearch = (props:{ keywords:string; }) => {
             }
             Object.assign(params, {srsearch: keywords});
             params = {...defaults, ...params};
-            setData(hydrateEntities(await getItems(params as {srsearch: string; srnamespace: number;})));
-            setBusy(false);
+
+            const results = await getItems(params as {srsearch: string; srnamespace: number;});
+
+            if (isWBError(results)) props.onErrorHandler(results);
+            else setData(hydrateEntities(results as string[]));
+            
+            setLoading(false);
         }
 
         if (props.keywords?.length) search(props.keywords);
         else {
-            const storedData:CEWBEntity[] = JSON.parse(sessionStorage.getItem('cewbdata') as string);
+            const storedData = getStoredData();
             setData(storedData);
-            setBusy(false);
+            setLoading(false);
         }
 
     }, [props]);
 
+    if (isLoading) return <CSSLoader style='dotdotdot'/>;
+
     return (
-        <SearchResults keywords={props.keywords} data={data} isbusy={isBusy}/>
+        <SearchResults keywords={props.keywords} data={data}/>
     );
 
 }

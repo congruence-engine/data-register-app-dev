@@ -1,62 +1,90 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable prefer-const */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 // MediaWiki API endpoint
 const endpoint = process.env.NEXT_PUBLIC_MEDIAWIKIAPI_ENDPOINT;
 
 // Types
-export interface WBEntity {
+export type PropertyNames = {
+    [key:string]: string;
+};
+export interface Entity {
     id: string;
     type: string;
-    label: string|null;
+    label: Translation;
     description: string|null;
-    statements?: WBStatement;
+    statements?: Statements;
 };
-export interface WBStatement {
-    [key: string]: WBProperty[];
+export type Translation = string|null;
+export interface Statements {
+    [key: string]: Property[];
 };
-export interface WBProperty {
+export interface Property {
     id: string;
     value: string|null;
     datatype:string;
-    qualifiers?: WBStatement;
+    qualifiers?: Statements;
 };
-export type propertyNames = {
-    [key:string]: string;
-};
-type GenericObject = {
-    [key: string]: {value: any}|any; 
-    hasOwnProperty?: any;
-};
-type RequestProps = QueryProps|(Omit<WBGetEntitiesProps, 'ids'> & {ids: string});
+export type WBError = { error: WBWarning }|Error|AxiosError;
+type WBWarning = {
+    code: string;
+    "*": string;
+    "module": string;
+}
 type QueryProps = {
     action?: string;
     continue?: string;
-} & (AllPagesProps|SRSearchProps);
+} & (AllPagesProps|SearchProps);
 type AllPagesProps = {
     list: 'allpages';
+    aplimit?: number;
     apnamespace?: number;
     apcontinue?: string;
 };
-type SRSearchProps = {
+type SearchProps = {
     list: 'search';
     srsearch?: string;
     srnamespace?: number,
+    srlimit?: number;
     sroffset?: number;
     srsort?: string;
 };
-type WBGetEntitiesProps = {
-    action?: string;
-    props?: string;
-    ids: string[];
+type WBEntity = {
+    id: string;
+    type: string;
+    labels: WBTranslation;
+    descriptions: WBTranslation;
+    claims?: WBClaim|any;
+};
+type WBTranslation = {
+    [key: string]: {
+        language: string;
+        value: string;
+    };
+}
+type WBClaim = {
+    [key: string]: WBObject[];
+};
+type WBObject = {
+    [key: string]: any;
+    hasOwnProperty?: any;
 };
 
 // Stuff that make stuff happen
-const Request = async (props:RequestProps) => {
+
+export const isWBError = (value: any): value is WBError => {
+    return (value.name === 'AxiosError' || value.error);
+}
+export const WBErrorMessage = (value: any) => {
+    if (value.name === 'AxiosError') return value.message;
+    if (value.error) return value.error?.info;
+}
+export const WBErrorType = (value: any) => {
+    if (value.name === 'AxiosError' || value.error) return 'api';
+}
+
+const useAPI = async (props:{}):Promise<{}> => {
 
     /*
      * MediaWiki APIs: https://www.mediawiki.org/wiki/API
@@ -66,7 +94,7 @@ const Request = async (props:RequestProps) => {
      * Wikibase CirrusSearch: https://www.mediawiki.org/wiki/Help:Extension:WikibaseCirrusSearch
     */
 
-    const params:GenericObject = {
+    const params = {
         ...props,
         format: 'json',
         origin: '*',
@@ -83,64 +111,59 @@ const Request = async (props:RequestProps) => {
     .then((response) => {
         return response.data;
     })
-    .catch ((err) => {
-        return err;
+    .catch((error) => {
+        return error;
     });
-    
-};
 
-const Query = async (props:QueryProps): Promise<string[]> => {
+}
+
+const Query = async (props:QueryProps):Promise<{}> => {
 
     const params = {
         ...props,
         action: 'query'
     }
-    
-    const response = await Request(params);
-    
-    let data:string[] = [];
-    
-    if (response.hasOwnProperty('query')) 
-        data = response.query[props.list].map((item: {ns: number; title: string;}) => {
-            if (item.ns === 0) return item.title;
-            return item.title.split(':')[1]
-        });
-    
+
+    const response:any = await useAPI(params);
+
+    if (isWBError(response)) return response;    
+
+    let data = [];
+
+    if (response.hasOwnProperty('query')) data = response.query[props.list];
+
     if (response.hasOwnProperty('continue')) {
         props.continue = response.continue.continue;
         if (props.list === 'allpages') props.apcontinue = response.continue.apcontinue;
         else if (props.list === 'search') props.sroffset = response.continue.sroffset;
         return data.concat(await Query(props));
     }
-    
+
     return data;
 
-};
+}
 
-const WBGetEntities = async (props:WBGetEntitiesProps): Promise<GenericObject[]> => {
+const WBGetEntities = async (ids:string[]): Promise<{}> => {
 
-    const ids = props.ids.join("|");
-
-    let params = {
-        ...props,
-        ids: ids,
+    const params = {
         action: 'wbgetentities',
-        props: 'labels|descriptions|claims'
-    }    
+        props: 'labels|descriptions|claims',
+        ids: ids.join("|")
+    }
     
-    let data:GenericObject[] = [];
+    let data = [];
 
     if (params.ids.length) {
-        const response = await Request(params);        
+        const response:any = await useAPI(params);
         if (response.hasOwnProperty('entities')) 
             data = Object.entries(response.entities as object).map(([key, value]) => value);
     }
-    
+
     return data;
 
 };
 
-const parseEntities = (entities:GenericObject[], propertyNames:propertyNames={}):WBEntity[] => {
+const parseEntities = (entities:WBEntity[], propertyNames:PropertyNames={}):Entity[] => {
 
     /* Parse entities into a simplified data strcuture:
     [
@@ -173,15 +196,15 @@ const parseEntities = (entities:GenericObject[], propertyNames:propertyNames={})
     ]
     */
     
-    const data = entities.map(item => {
+    const data = entities.map(entity => {
 
-        let values:WBEntity = {
-            id: item.id,
-            type: item.type,
-            label: Object.keys(item.labels).length > 0 ? parseTranslation(item.labels) : null,
-            description: Object.keys(item.descriptions).length > 0 ? parseTranslation(item.descriptions) : null
+        let values:any = {
+            id: entity.id,
+            type: entity.type,
+            label: Object.keys(entity.labels).length > 0 ? parseTranslation(entity.labels) : null,
+            description: Object.keys(entity.descriptions).length > 0 ? parseTranslation(entity.descriptions) : null
         }
-        if (Object.keys(item.claims).length > 0) values.statements = parseStatements(item.claims, propertyNames);
+        if (entity.hasOwnProperty('claims') && Object.keys(entity.claims).length > 0) values.statements = parseStatements(entity.claims, propertyNames);
 
         return values;
     });
@@ -189,12 +212,7 @@ const parseEntities = (entities:GenericObject[], propertyNames:propertyNames={})
     return data;
 };
 
-const parseTranslation = (value:{
-    [key: string]: {
-        language: string;
-        value: string;
-    }; 
-}, preferredLanguage='en'):string|null => {
+const parseTranslation = (value:WBTranslation, preferredLanguage:string='en'):Translation => {
 
     // Get translation in the preferred language
     if (value.hasOwnProperty(preferredLanguage)) return value[preferredLanguage].value;
@@ -206,7 +224,7 @@ const parseTranslation = (value:{
 
 };
 
-const parseStatements = (claims:object, propertyNames:propertyNames={}):WBStatement => {
+const parseStatements = (claims:WBClaim, propertyNames:PropertyNames={}):Statements => {
 
     let statements = {};
 
@@ -217,17 +235,14 @@ const parseStatements = (claims:object, propertyNames:propertyNames={}):WBStatem
         let statement = [];
 
         for (const value of claim) {
-
-            let property:WBProperty = {
+            let property:Property = {
                 id: pid,
                 value: value.mainsnak?.datavalue?.value ?? value.datavalue?.value ?? null,
                 datatype: value.mainsnak?.datatype ?? value.datatype
             };
-            
+
             if (value.hasOwnProperty('qualifiers')) property.qualifiers = parseStatements(value.qualifiers, propertyNames);
-
             statement.push(property);
-
         }
 
         statements = {...statements, [pname]: statement};
@@ -240,41 +255,49 @@ const parseStatements = (claims:object, propertyNames:propertyNames={}):WBStatem
 
 export const getProperties = async (props:{
     apnamespace?: number;
-}, parse:boolean=false):Promise<WBEntity[]|string[]> => {
+}, hydrate:boolean=false):Promise<Entity[]|string[]|WBError> => {
 
-    const args:AllPagesProps = {
+    const params:AllPagesProps = {
         ...props,
         list: 'allpages'
     };
-    const ids = await Query(args);
 
-    if (!parse) return ids;
- 
-    return parseEntities(await WBGetEntities({ids: ids}));
+    const result:any = await Query(params);
+
+    if (isWBError(result)) return result;
+
+    const ids = result.map((item: {ns: number; title: string;}) => {
+        if (item.ns === 0) return item.title;
+        return item.title.split(':')[1]
+    });
+
+    if (hydrate) return parseEntities(await WBGetEntities(ids) as WBEntity[]);
+
+    return ids;   
 
 };
 
 export const getItems = async (props:{
     srsearch: string;
     srnamespace?: number
-}):Promise<string[]> => {
+}, hydrate:boolean=false, propertyNames:PropertyNames={}):Promise<Entity[]|string[]|WBError> => {
 
-    const args:SRSearchProps = {
+    const params:SearchProps = {
         ...props,
         list: 'search'
     };
     
-    return await Query(args);
+    const result:any = await Query(params);
 
-};
+    if (isWBError(result)) return result;
 
-export const getHydratedItems = async (props:{
-    srsearch: string;
-    srnamespace?: number
-}, propertyNames:propertyNames={}):Promise<WBEntity[]> => {
+    const ids = result.map((item: {ns: number; title: string;}) => {
+        if (item.ns === 0) return item.title;
+        return item.title.split(':')[1]
+    });
 
-    const ids = await getItems(props);
+    if (hydrate) return parseEntities(await WBGetEntities(ids) as WBEntity[], propertyNames);
 
-    return parseEntities(await WBGetEntities({ids: ids}), propertyNames);
+    return ids;
 
-};
+}
