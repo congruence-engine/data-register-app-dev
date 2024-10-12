@@ -2,9 +2,10 @@
 
 import Search from '@/app/components/Search';
 
+
 const Home = () => {
   return (
-    <Search/>
+        <Search/>
   );
 }
 

@@ -3,27 +3,26 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-import { fetchStoredData } from '@/app/components/Data';
+import { hasStoredData, setSessionData } from '@/app/components/Data';
 import FullTextSearch from '@/app/components/FullTextSearch';
 import VectorSearch from '@/app/components/VectorSearch';
-import { CSSLoader } from '@/app/components/Loader';
+import { DotLoader } from '@/app/components/Loader';
 import ErrorMessage from '@/app/components/Error';
-
 
 // Stuff that make stuff happen
 
 const Search = () => {
 
     const searchParams = useSearchParams();
-    const [isReady, setReady] = useState(true);
-    const [isError, setError] = useState();
+    const [isReady, setReady] = useState<boolean>(false);
+    const [isError, setError] = useState<object>();
 
-    const onErrorHandler = (error:any) => setError(error);
+    const onErrorHandler = (error:object) => setError(error);
 
     useEffect(() => {
 
         const initialize = async () => {
-
+            
             /*
              * Fetch all the (Q)items from CE Wikibase and save in session storage.
              * [WHY] Searches return an array of (Q)item ids, which is rehydrated using the 
@@ -33,14 +32,14 @@ const Search = () => {
              * search and another to fetch details of matched items), and having the (Q)item
              * details available locally eliminates the need for the 2nd API call.
              */
-            await fetchStoredData({onErrorHandler: onErrorHandler});
 
-            setReady(false);
-        
+            if (!hasStoredData()) await setSessionData({onErrorHandler: onErrorHandler});
+            setReady(true);
+            
         }
-    
+        
         initialize();
-
+        
     }, []);
 
     if (isError) return <ErrorMessage error={isError}/>;
@@ -50,19 +49,21 @@ const Search = () => {
             <h1 className='home'>Congruence Engine Data Register</h1>
             <form>
                 <div className='fieldgroup'>
-                    <label htmlFor='searchmode'>Search Mode</label>
-                    <select name='searchmode' id='searchmode' defaultValue={searchParams.get('searchmode')?.toString() ?? 'fulltext'}>
+                    <label htmlFor='mode'>Search Mode</label>
+                    <select name='mode' id='mode' defaultValue={searchParams.get('mode')?.toString() ?? 'fulltext'}>
                         <option value='fulltext'>Full Text Search</option>
                         <option value='vector'>Vector Search</option>
                     </select>
                 </div>
                 <div className='fieldgroup'>
-                    <label htmlFor='keywords'>Keywords</label>
-                    <input type='search' name='keywords' id='keywords' placeholder='Search...' defaultValue={searchParams.get('keywords')?.toString()}/>
+                    <label htmlFor='query'>Keywords</label>
+                    <input type='search' name='query' id='query' placeholder='Search...' defaultValue={searchParams.get('query')?.toString()}/>
                 </div>
                 <button type='submit'><span className='btntext'>Search</span></button>
             </form>
-            { isReady ? <CSSLoader style='dotdotdot'/> : searchParams.get('searchmode')?.toString() === 'vector' ? <VectorSearch keywords={searchParams.get('keywords')?.toString() as string} onErrorHandler={onErrorHandler}/> : <FullTextSearch keywords={searchParams.get('keywords')?.toString() as string} onErrorHandler={onErrorHandler}/> }
+            { !isReady ? <DotLoader style='dotdotdot'/> : 
+                searchParams.get('mode')?.toString() === 'vector' ? <VectorSearch keywords={searchParams.get('query')?.toString() as string} onErrorHandler={onErrorHandler}/> : <FullTextSearch keywords={searchParams.get('query')?.toString() as string} onErrorHandler={onErrorHandler}/> 
+            }
         </section>
     );
 

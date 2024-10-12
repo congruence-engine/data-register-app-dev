@@ -1,6 +1,6 @@
 'use client';
 
-import { getItems, Entity, PropertyNames, isWBError } from '@/app/services/MediaWikiAPI';
+import { getItems, Entity, PropertyNames, isException } from '@/app/services/MediaWikiAPI';
 
 export interface CEEntity extends Entity {
     embeddings?: number[];
@@ -21,18 +21,16 @@ const CEPropertyNames:PropertyNames = {
 
 const storedDataName = 'ce-wikibase';
 
-export const fetchStoredData = async (props:{onErrorHandler:any}) => {
+export const setSessionData = async (props:{onErrorHandler:(error:object)=>void}) => {
 
-    if (sessionStorage.getItem(storedDataName) === null) {
-        
         const params = {
             srsearch: 'haswbstatement:P1=Q1', 
             srnamespace: 120
         }
-
+        
         const results = await getItems(params as {srsearch: string; srnamespace: number;}, true, CEPropertyNames) as CEEntity[];
 
-        if (isWBError(results)) props.onErrorHandler(results);
+        if (isException(results)) props.onErrorHandler(results);
         else if (results.length) {
             // Sort the results alphabetically
             results.sort((a, b) => {
@@ -46,20 +44,19 @@ export const fetchStoredData = async (props:{onErrorHandler:any}) => {
             });
             sessionStorage.setItem(storedDataName, JSON.stringify(results));
         }
-    }
 
 }
 
-export const setStoredData = (data:CEEntity[]) => {
+export const hasStoredData = ():boolean => {
+    return sessionStorage.getItem(storedDataName) !== null
+}
 
+export const setStoredData = (data:CEEntity[]):void => {
     sessionStorage.setItem(storedDataName, JSON.stringify(data));
-
 }
 
 export const getStoredData = ():CEEntity[] => {
-
     return JSON.parse(sessionStorage.getItem(storedDataName) as string);
-
 }
 
 export const hydrateEntities = (entityIDs:string[]):CEEntity[] => {

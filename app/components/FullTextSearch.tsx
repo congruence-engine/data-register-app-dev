@@ -2,21 +2,23 @@
 
 import { useState, useEffect } from 'react';
 
-import { getItems, isWBError } from "@/app/services/MediaWikiAPI";
+import { getItems, isException } from "@/app/services/MediaWikiAPI";
 import { CEEntity, getStoredData, hydrateEntities } from '@/app/components/Data';
 import SearchResults from '@/app/components/SearchResults';
-import { CSSLoader } from '@/app/components/Loader';
+import { DotLoader } from '@/app/components/Loader';
 
 // Stuff that make stuff happen
 
-const FullTextSearch = (props:{keywords:string; onErrorHandler:any;}) => {
+const FullTextSearch = (props:{keywords:string; onErrorHandler:(error:object)=>void;}) => {
 
     const [data, setData] = useState<CEEntity[]>([]);
-    const [isLoading, setLoading] = useState(true);
+    const [isLoading, setLoading] = useState<boolean>(true);
+    const [loadingMessage, setLoadingMessage] = useState<string>('');
 
     useEffect(() => {
         
         setLoading(true);
+        setLoadingMessage('Searching...');
 
         const search = async (keywords:string) => {
 
@@ -46,13 +48,14 @@ const FullTextSearch = (props:{keywords:string; onErrorHandler:any;}) => {
 
             const results = await getItems(params as {srsearch: string; srnamespace: number;});
 
-            if (isWBError(results)) props.onErrorHandler(results);
+            if (isException(results)) props.onErrorHandler(results);
             else setData(hydrateEntities(results as string[]));
             
             setLoading(false);
-        }
 
-        if (props.keywords?.length) search(props.keywords);
+        }
+        
+        if (props.keywords && props.keywords.length) search(props.keywords);
         else {
             const storedData = getStoredData();
             setData(storedData);
@@ -61,7 +64,7 @@ const FullTextSearch = (props:{keywords:string; onErrorHandler:any;}) => {
 
     }, [props]);
 
-    if (isLoading) return <CSSLoader style='dotdotdot'/>;
+    if (isLoading) return <DotLoader style='dotdotdot' message={loadingMessage}/>;
 
     return (
         <SearchResults keywords={props.keywords} data={data}/>

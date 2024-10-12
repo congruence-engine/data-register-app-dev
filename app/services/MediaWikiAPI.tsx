@@ -9,6 +9,7 @@ const endpoint = process.env.NEXT_PUBLIC_MEDIAWIKIAPI_ENDPOINT;
 export type PropertyNames = {
     [key:string]: string;
 };
+
 export interface Entity {
     id: string;
     type: string;
@@ -26,12 +27,7 @@ export interface Property {
     datatype:string;
     qualifiers?: Statements;
 };
-export type WBError = { error: WBWarning }|Error|AxiosError;
-type WBWarning = {
-    code: string;
-    "*": string;
-    "module": string;
-}
+
 type QueryProps = {
     action?: string;
     continue?: string;
@@ -50,41 +46,29 @@ type SearchProps = {
     sroffset?: number;
     srsort?: string;
 };
-type WBEntity = {
-    id: string;
-    type: string;
-    labels: WBTranslation;
-    descriptions: WBTranslation;
-    claims?: WBClaim|any;
+
+type RecordValue = string | number;
+type NestedRecord = {
+    [key: string]: RecordValue | NestedRecord;
 };
-type WBTranslation = {
-    [key: string]: {
-        language: string;
-        value: string;
-    };
+
+export type Exception = APIWarning|Error|AxiosError;
+type  APIWarning = {
+    code: string;
+    "*": string;
+    "module": string;
 }
-type WBClaim = {
-    [key: string]: WBObject[];
-};
-type WBObject = {
-    [key: string]: any;
-    hasOwnProperty?: any;
-};
+export const isException = (value:unknown):boolean => {
+    return typeof value === 'object' && value !== null && (value['name' as keyof object] === 'AxiosError' || value['error' as keyof object]);
+}
+export const ExceptionType = (value:unknown):string|void => {
+    if (isException(value)) return 'api';
+}
+
 
 // Stuff that make stuff happen
 
-export const isWBError = (value: any): value is WBError => {
-    return (value.name === 'AxiosError' || value.error);
-}
-export const WBErrorMessage = (value: any) => {
-    if (value.name === 'AxiosError') return value.message;
-    if (value.error) return value.error?.info;
-}
-export const WBErrorType = (value: any) => {
-    if (value.name === 'AxiosError' || value.error) return 'api';
-}
-
-const useAPI = async (props:{}):Promise<{}> => {
+const useAPI = async (props:object):Promise<NestedRecord|Exception> => {
 
     /*
      * MediaWiki APIs: https://www.mediawiki.org/wiki/API
@@ -109,7 +93,7 @@ const useAPI = async (props:{}):Promise<{}> => {
         }
     })
     .then((response) => {
-        return response.data;
+        return response.data as NestedRecord;
     })
     .catch((error) => {
         return error;
@@ -117,53 +101,53 @@ const useAPI = async (props:{}):Promise<{}> => {
 
 }
 
-const Query = async (props:QueryProps):Promise<{}> => {
+const Query = async (props:QueryProps):Promise<NestedRecord[]|Exception> => {
 
     const params = {
         ...props,
         action: 'query'
     }
 
-    const response:any = await useAPI(params);
+    const response = await useAPI(params) as NestedRecord;
 
-    if (isWBError(response)) return response;    
+    if (isException(response)) return response as Exception;    
 
-    let data = [];
+    let data:object[] = [];
 
-    if (response.hasOwnProperty('query')) data = response.query[props.list];
+    if (response.hasOwnProperty('query') && typeof response.query === 'object') data = response.query[props.list] as unknown as object[];
 
-    if (response.hasOwnProperty('continue')) {
-        props.continue = response.continue.continue;
-        if (props.list === 'allpages') props.apcontinue = response.continue.apcontinue;
-        else if (props.list === 'search') props.sroffset = response.continue.sroffset;
-        return data.concat(await Query(props));
+    if (response.hasOwnProperty('continue') && typeof response.continue === 'object') {
+        props.continue = response.continue.continue as string;
+        if (props.list === 'allpages') props.apcontinue = response.continue.apcontinue as string;
+        else if (props.list === 'search') props.sroffset = response.continue.sroffset as number;
+        return data.concat(await Query(props)) as NestedRecord[];
     }
 
-    return data;
+    return data as NestedRecord[];
 
 }
 
-const WBGetEntities = async (ids:string[]): Promise<{}> => {
+const WBGetEntities = async (ids:string[]): Promise<NestedRecord[]|Exception> => {
 
     const params = {
         action: 'wbgetentities',
         props: 'labels|descriptions|claims',
         ids: ids.join("|")
     }
-    
-    let data = [];
 
-    if (params.ids.length) {
-        const response:any = await useAPI(params);
-        if (response.hasOwnProperty('entities')) 
-            data = Object.entries(response.entities as object).map(([key, value]) => value);
-    }
+    const response = await useAPI(params) as NestedRecord;
 
-    return data;
+    if (isException(response)) return response as Exception;
+
+    let data:object = [];
+    if (response.hasOwnProperty('entities')) 
+        data = (Object.entries(response.entities).map((value) => value[1]));
+
+    return data as NestedRecord[];
 
 };
 
-const parseEntities = (entities:WBEntity[], propertyNames:PropertyNames={}):Entity[] => {
+const parseEntities = (entities:NestedRecord[], propertyNames:PropertyNames={}):Entity[] => {
 
     /* Parse entities into a simplified data strcuture:
     [
@@ -195,16 +179,15 @@ const parseEntities = (entities:WBEntity[], propertyNames:PropertyNames={}):Enti
         ...
     ]
     */
-    
-    const data = entities.map(entity => {
 
-        let values:any = {
-            id: entity.id,
-            type: entity.type,
-            label: Object.keys(entity.labels).length > 0 ? parseTranslation(entity.labels) : null,
-            description: Object.keys(entity.descriptions).length > 0 ? parseTranslation(entity.descriptions) : null
+    const data:Entity[] = entities.map((entity) => {
+        const values:Entity = {
+            id: entity.id as string,
+            type: entity.type as string,
+            label: Object.keys(entity.labels).length ? parseTranslation(entity.labels as object) : null,
+            description: Object.keys(entity.descriptions).length > 0 ? parseTranslation(entity.descriptions as object) : null
         }
-        if (entity.hasOwnProperty('claims') && Object.keys(entity.claims).length > 0) values.statements = parseStatements(entity.claims, propertyNames);
+        if (entity.hasOwnProperty('claims') && Object.keys(entity.claims as object).length > 0) values.statements = parseStatements(entity.claims as object, propertyNames);
 
         return values;
     });
@@ -212,30 +195,30 @@ const parseEntities = (entities:WBEntity[], propertyNames:PropertyNames={}):Enti
     return data;
 };
 
-const parseTranslation = (value:WBTranslation, preferredLanguage:string='en'):Translation => {
+const parseTranslation = (value:object, preferredLanguage:string='en'):Translation => {
 
     // Get translation in the preferred language
-    if (value.hasOwnProperty(preferredLanguage)) return value[preferredLanguage].value;
+    if (value.hasOwnProperty(preferredLanguage)) return value[preferredLanguage as keyof object]['value'];
     
     // Get the default/first translation
-    if (Object.keys(value).length > 0) return value[Object.keys(value)[0]].value;
+    if (Object.keys(value).length > 0) return value[Object.keys(value)[0] as keyof object]['value'];
 
     return null;
 
 };
 
-const parseStatements = (claims:WBClaim, propertyNames:PropertyNames={}):Statements => {
+const parseStatements = (claims:object, propertyNames:PropertyNames={}):Statements => {
 
     let statements = {};
 
     Object.entries(claims).forEach(([pid, claim]) => {
 
-        const pname:string|any = (propertyNames.hasOwnProperty(pid)) ? propertyNames[pid] : pid;
+        const pname:string = (propertyNames.hasOwnProperty(pid)) ? propertyNames[pid] : pid;
 
-        let statement = [];
+        const statement = [];
 
         for (const value of claim) {
-            let property:Property = {
+            const property:Property = {
                 id: pid,
                 value: value.mainsnak?.datavalue?.value ?? value.datavalue?.value ?? null,
                 datatype: value.mainsnak?.datatype ?? value.datatype
@@ -255,23 +238,23 @@ const parseStatements = (claims:WBClaim, propertyNames:PropertyNames={}):Stateme
 
 export const getProperties = async (props:{
     apnamespace?: number;
-}, hydrate:boolean=false):Promise<Entity[]|string[]|WBError> => {
+}, hydrate:boolean=false):Promise<string[]|Entity[]|Exception> => {
 
     const params:AllPagesProps = {
         ...props,
         list: 'allpages'
     };
 
-    const result:any = await Query(params);
+    const result = await Query(params);
 
-    if (isWBError(result)) return result;
+    if (isException(result)) return result as Exception;
 
-    const ids = result.map((item: {ns: number; title: string;}) => {
+    const ids = (result as {ns: number; title: string;}[]).map((item) => {
         if (item.ns === 0) return item.title;
-        return item.title.split(':')[1]
+        return item.title.split(':')[1];
     });
 
-    if (hydrate) return parseEntities(await WBGetEntities(ids) as WBEntity[]);
+    if (hydrate) return parseEntities(await WBGetEntities(ids) as NestedRecord[]);
 
     return ids;   
 
@@ -280,23 +263,23 @@ export const getProperties = async (props:{
 export const getItems = async (props:{
     srsearch: string;
     srnamespace?: number
-}, hydrate:boolean=false, propertyNames:PropertyNames={}):Promise<Entity[]|string[]|WBError> => {
+}, hydrate:boolean=false, propertyNames:PropertyNames={}):Promise<string[]|Entity[]|Exception> => {
 
     const params:SearchProps = {
         ...props,
         list: 'search'
     };
     
-    const result:any = await Query(params);
+    const result = await Query(params);
 
-    if (isWBError(result)) return result;
+    if (isException(result)) return result as Exception;
 
-    const ids = result.map((item: {ns: number; title: string;}) => {
+    const ids = (result as {ns: number; title: string;}[]).map((item) => {
         if (item.ns === 0) return item.title;
-        return item.title.split(':')[1]
+        return (item.title as string).split(':')[1];
     });
 
-    if (hydrate) return parseEntities(await WBGetEntities(ids) as WBEntity[], propertyNames);
+    if (hydrate) return parseEntities(await WBGetEntities(ids) as NestedRecord[], propertyNames);
 
     return ids;
 

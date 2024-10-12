@@ -1,6 +1,6 @@
 'use client';
 
-export const CSSLoader = (props:{style:string; message?:string;}) => {
+export const DotLoader = (props:{style:string; message?:string;}) => {
     return (
         <div className="loader">
             <div className={props.style}></div>

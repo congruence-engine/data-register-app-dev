@@ -8,22 +8,26 @@ const pluralize = (count:number, string:string, suffix:string = 's') => `${count
 const SearchResults = (props:{ keywords:string; data:CEEntity[]; }) => {
 
     const toggleLayout = (event:FormEvent) => {
+    
+        // Change layout style
         const mode = event.currentTarget.getAttribute('data-mode');
         const element = document.getElementById('search-results-content')?.getElementsByTagName('ol')[0];
         if (mode === 'list') element?.classList.replace('tile', 'list');
         else element?.classList.replace('list', 'tile');
-        setActive(event.target);        
+        
+        // Change button style
+        const target = event.target as HTMLElement;
+        const siblings: Element[] = Array.from(target.parentElement?.children ?? []);
+        siblings.forEach((sibling: Element) => sibling.classList.remove('active'));
+        target.classList.add('active');
+        
     }
-    const setActive = (element:any) => {
-        [...element.parentElement.children].forEach(sibling => sibling.classList.remove('active'));
-        element.classList.add('active');
-    }
-
+    
     return (
         <div id='search-results'>
             <div id='search-results-header'>
                 <div id='display-status'>
-                    <p role="status">{ props.keywords?.length ? `${pluralize(props.data.length, 'record')} found.` : `Showing all ${props.data.length} records.` }</p>
+                    <p role="status">{ props.keywords && props.keywords?.length ? `${pluralize(props.data.length, 'record')} found.` : `Showing all ${props.data.length} records.` }</p>
                 </div>
                 {props.data.length ? 
                 <div id='display-options' role='menu'>

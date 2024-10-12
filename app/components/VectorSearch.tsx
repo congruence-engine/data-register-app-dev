@@ -5,16 +5,18 @@ import { useState, useEffect } from 'react';
 import { CEEntity, getStoredData, setStoredData, hydrateEntities } from '@/app/components/Data';
 import { cosinesim, generateTextStructureForEmbeddings, getEmbeddings } from '../services/VectorSearchHelper';
 import SearchResults from './SearchResults';
-import { CSSLoader } from '@/app/components/Loader';
+import { DotLoader } from '@/app/components/Loader';
 
-const VectorSearch = (props:{keywords:string; onErrorHandler:any;}) => {
+const VectorSearch = (props:{keywords:string; onErrorHandler:(error:object)=>void;}) => {
 
     const [data, setData] = useState<CEEntity[]>([]);
-    const [isLoading, setLoading] = useState(true);
+    const [isLoading, setLoading] = useState<boolean>(true);
+    const [loadingMessage, setLoadingMessage] = useState<string>('');
 
     useEffect(() => {
 
         setLoading(true);
+        setLoadingMessage('Generating vector embeddings (this may take a while...)');
 
         const generateEmbeddings = async () => {
             const embeddings = await getEmbeddings(generateTextStructureForEmbeddings(storedData))
@@ -38,7 +40,10 @@ const VectorSearch = (props:{keywords:string; onErrorHandler:any;}) => {
 
         const search = async (keywords:string) => {
 
+            setLoadingMessage('Searching...');
+
             getEmbeddings([keywords]).then(searchEmbedding => {
+                
                 console.log(searchEmbedding[0])
 
                 const storedData:CEEntity[] = getStoredData();
@@ -63,7 +68,7 @@ const VectorSearch = (props:{keywords:string; onErrorHandler:any;}) => {
 
         }
 
-        if (props.keywords?.length) search(props.keywords);
+        if (props.keywords && props.keywords.length) search(props.keywords);
         else {
             setData(storedData);
             setLoading(false);
@@ -71,7 +76,7 @@ const VectorSearch = (props:{keywords:string; onErrorHandler:any;}) => {
 
     }, [props]);
 
-    if (isLoading) return <CSSLoader style='dotdotdot' message='Generating vector embeddings, may take a while...'/>;
+    if (isLoading) return <DotLoader style='dotdotdot' message={loadingMessage}/>;
 
     return (
         <SearchResults keywords={props.keywords} data={data}/>

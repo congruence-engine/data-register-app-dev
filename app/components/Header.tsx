@@ -6,7 +6,7 @@ const Header = () => {
     return (
         <header>
             <div className="container">
-                <Image src='/images/CongruenceEngine-TitleTreatment-Left-White.png' width={300} height={81} alt='Picture of the author'/>
+                <Image src='/images/CongruenceEngine-TitleTreatment-Left-White.png' width={300} height={81} alt='Congruence Engine' priority={true}/>
             </div>
         </header>
     );
