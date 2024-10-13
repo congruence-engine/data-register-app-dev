@@ -9,7 +9,7 @@ export const getEmbeddings = async (data: string[]): Promise<number[][]> => {
 
   const extractor = await pipeline(
     "feature-extraction",
-    "Xenova/bge-base-en-v1.5"
+    "Xenova/bge-small-en-v1.5"
   );
   const embeddings: number[][] = await Promise.all(
     data.map(async (item) => {
