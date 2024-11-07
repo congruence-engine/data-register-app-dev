@@ -5,7 +5,7 @@ import { CEEntity } from '@/app/components/Data';
 
 const pluralize = (count:number, string:string, suffix:string = 's') => `${count} ${string}${count !== 1 ? suffix : ''}`;
 
-const SearchResults = (props:{ keywords:string; data:CEEntity[]; }) => {
+const SearchResults = (props:{ keywords:string; data:CEEntity[]; searchMode:string }) => {
 
     const toggleLayout = (event:FormEvent) => {
     
@@ -22,12 +22,16 @@ const SearchResults = (props:{ keywords:string; data:CEEntity[]; }) => {
         target.classList.add('active');
         
     }
+
+    // const itemVectorSearchHeader = 
     
     return (
         <div id='search-results'>
             <div id='search-results-header'>
                 <div id='display-status'>
-                    <p role="status">{ props.keywords && props.keywords?.length ? `${pluralize(props.data.length, 'record')} found.` : `Showing all ${props.data.length} records.` }</p>
+                    <p role="status">{ props.searchMode == 'itemVectorSearch' ? 
+                        <>Showing {props.data.length} items in order of cosine similarity to <strong><span aria-details={props.data[0].id}> {props.data[0].label} </span></strong></>:  
+                        props.keywords && props.keywords?.length ? `${pluralize(props.data.length, 'record')} found.` : `Showing all ${props.data.length} records.` }</p>
                 </div>
                 {props.data.length ? 
                 <div id='display-options' role='menu'>
@@ -39,11 +43,12 @@ const SearchResults = (props:{ keywords:string; data:CEEntity[]; }) => {
             </div>
             <div id='search-results-content'>
                 { props.data.length ? 
-                    <ol className='tile'>
+                    // <ol className={'tile' + (props.searchMode == 'itemVectorSearch' ? ' itemVectorSearch' : '')}>
+                    <ol className={'tile ' + props.searchMode}>
                         { props.data.map((item) => (
-                            <li key={item.id} className='item'>
+                            <li key={item.id} id={item.id} className='item'>
                                 <div className='entry'>
-                                    <h2 className="label">{item.label}</h2>
+                                    <h2 className="label"> {item.label}</h2>
                                     <p className="description">{item.description}</p>
                                 </div>
                                 <ul className="statements">
@@ -71,7 +76,9 @@ const SearchResults = (props:{ keywords:string; data:CEEntity[]; }) => {
                                         <p className="name">Data Register</p>
                                         <p className="value"><a href={'https://congruence-engine.wikibase.cloud/wiki/Item:' + item.id}>Congruence Engine Data Register ({item.id})</a></p>
                                     </li>
+                                    
                                 </ul>
+                               { ( props.searchMode == 'itemVectorSearch' || props.searchMode == 'keywordVectorSearch') && <a href={`/data-register-app-dev?mode=vector&simDataset=${item.id}`} className='vectorSim'>Vector Similarity</a>}
                             </li>
                         ))}
                     </ol>

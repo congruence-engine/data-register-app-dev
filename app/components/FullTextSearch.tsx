@@ -67,7 +67,7 @@ const FullTextSearch = (props:{keywords:string; onErrorHandler:(error:object)=>v
     if (isLoading) return <DotLoader style='dotdotdot' message={loadingMessage}/>;
 
     return (
-        <SearchResults keywords={props.keywords} data={data}/>
+        <SearchResults keywords={props.keywords} data={data} searchMode='keywordSearch'/>
     );
 
 }

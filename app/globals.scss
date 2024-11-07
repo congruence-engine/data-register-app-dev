@@ -62,10 +62,12 @@ body {
 body {
     @apply font-sans font-light leading-normal;
 }
+
 header {
     @apply py-5;
     background-color: var(--foreground);
 }
+
 main {
 
     h1 {
@@ -73,6 +75,7 @@ main {
     }
 
 }
+
 footer {
     background-color: var(--foreground);
 }
@@ -80,6 +83,7 @@ footer {
 .container {
     @apply mx-auto;
 }
+
 input,
 select,
 button {
@@ -88,12 +92,12 @@ button {
 
 #search {
 
-    &> form {
+    &>form {
 
         // Layout
 
         @apply flex items-end mb-6;
-        
+
         .fieldgroup {
             &:nth-child(2) {
                 @apply grow;
@@ -103,15 +107,18 @@ button {
         // Appearance
 
         label {
-            @apply block mb-1 pl-3 text-sm;// text-gray-600;
+            @apply block mb-1 pl-3 text-sm; // text-gray-600;
         }
+
         input[type='search'],
         button[type='submit'] {
             @apply form-input;
         }
+
         select {
             @apply form-select;
         }
+
         input[type='search'],
         select,
         button[type='submit'] {
@@ -144,8 +151,10 @@ button {
                 opacity: .6;
                 transition: 0.3s;
             }
+
             &:hover {
-                @apply bg-#{$accent-color-tailwind}; 
+                @apply bg-#{$accent-color-tailwind};
+
                 &:before {
                     opacity: 1;
                 }
@@ -157,11 +166,13 @@ button {
         }
 
         @screen md {
+
             input[type='search'],
             select,
             button[type='submit'] {
                 @apply h-16;
             }
+
             button[type='submit'] {
                 @apply w-16 px-6;
             }
@@ -171,10 +182,10 @@ button {
     #search-results {
 
         // Layout
-        
-        &> #search-results-header {
-            
-            @apply flex;
+
+        &>#search-results-header {
+
+            @apply flex-none md:flex;
 
             #display-status {
                 @apply grow;
@@ -183,18 +194,20 @@ button {
 
         // Appearance
 
-        &> #search-results-header {
+        &>#search-results-header {
             #display-options {
                 p {
                     @apply inline-block mr-1;
                 }
+
                 button {
                     @apply form-input px-2 py-0.5;
                 }
-                button + button {
+
+                button+button {
                     @apply ml-0.5;
                 }
-                
+
                 button {
                     position: relative;
                     background-color: var(--foreground);
@@ -202,22 +215,51 @@ button {
                     border: none;
                     transition: 0.3s;
                 }
-                
+
                 button:hover,
                 button.active {
                     @apply bg-#{$accent-color-tailwind};
                 }
-                button:focus { outline: none; }
+
+                button:focus {
+                    outline: none;
+                }
 
             }
         }
 
-        &> #search-results-content {
+        &>#search-results-content {
 
             // Layout
-            ol, ul {
+            ol,
+            ul {
                 list-style-type: none;
                 padding-left: 0;
+            }
+
+            button {
+                @apply form-input px-2 py-0.5 mb-0.5;
+            }
+
+            button+button {
+                @apply ml-0.5;
+            }
+
+            button {
+                position: relative;
+                background-color: var(--foreground);
+                color: var(--background);
+                border: none;
+                transition: 0.3s;
+            }
+
+            button:hover,
+            button.active {
+                @apply bg-#{$accent-color-tailwind};
+            }
+
+            button:focus {
+                outline: none;
             }
 
         }
@@ -229,7 +271,7 @@ button {
     // Layout: List
     ol.list {
 
-        &> li {
+        &>li {
             @apply my-4 pt-4 px-4 border-2 border-solid border-gray-200;
         }
 
@@ -241,8 +283,8 @@ button {
                 @apply mt-0;
             }
 
-           .statements {
-                
+            .statements {
+
                 @apply grid grid-cols-1 md:grid-cols-2 gap-x-6;
 
                 .property {
@@ -251,8 +293,8 @@ button {
                         @apply mt-0;
                     }
                 }
-           }
-            
+            }
+
         }
 
     }
@@ -262,16 +304,18 @@ button {
 
         @apply grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4;
 
-        &> li {
+        &>li {
             @apply px-4 border-2 border-solid border-gray-200;
-            border-color: rgb( 230, 230, 230);
+            border-color: rgb(230, 230, 230);
         }
 
         .item {
+
             // Layout
             .label {
                 @apply min-h-fit md:min-h-24;
             }
+
             .description {
                 @apply min-h-fit md:min-h-36;
             }
@@ -279,22 +323,56 @@ button {
 
     }
 
+    ol.itemVectorSearch {
+        &>li:first-of-type {
+            border-color: $accent-color;
+
+            &>a {
+                display: none;
+                background-color: $accent-color
+            }
+        }
+
+        &>li {
+            @apply flex flex-col justify-between;
+        }
+    }
+
+    ol.keywordVectorSearch {
+        &>li {
+            @apply flex flex-col justify-between;
+        }
+    }
+
     //Appearance
     .item {
         .label {
             @apply font-semibold leading-snug;
         }
+
         .property {
             .name {
                 @apply mb-0 text-sm font-medium;
             }
+
             .value {
                 @apply mt-0;
+
                 a {
                     @apply text-current decoration-gray-500 hover:text-#{$accent-color-tailwind} hover:decoration-#{$accent-color-tailwind};
                     transition: 0.25s;
                 }
             }
+        }
+
+        .vectorSim {
+            @apply px-2 py-0.5 form-input mb-2 no-underline hover:bg-#{$accent-color-tailwind};
+            background-color: var(--foreground);
+            color: var(--background);
+            border: none;
+            transition: 0.3s;
+            max-width: max-content;
+
         }
     }
 
@@ -305,9 +383,11 @@ button {
  *************************/
 
 // Sticky footer
-html, body {
+html,
+body {
     height: 100%;
-    &> footer {
+
+    &>footer {
         position: sticky;
         top: 100vh;
     }
@@ -346,10 +426,10 @@ input[type="search"].dark::-webkit-search-cancel-button {
         display: inline-block;
         width: 60px;
         aspect-ratio: 2;
-        --_g: no-repeat radial-gradient(circle closest-side, $accent-color 90%,#0000);
-        background: 
-            var(--_g) 0%   50%,
-            var(--_g) 50%  50%,
+        --_g: no-repeat radial-gradient(circle closest-side, $accent-color 90%, #0000);
+        background:
+            var(--_g) 0% 50%,
+            var(--_g) 50% 50%,
             var(--_g) 100% 50%;
         background-size: calc(100%/3) 50%;
         animation: bouncydots 1s infinite linear;
@@ -367,7 +447,7 @@ input[type="search"].dark::-webkit-search-cancel-button {
         display: inline-block;
         width: 60px;
         aspect-ratio: 4;
-        background: radial-gradient(circle closest-side,#000 90%,#0000) 0/calc(100%/3) 100% space;
+        background: radial-gradient(circle closest-side, #000 90%, #0000) 0/calc(100%/3) 100% space;
         clip-path: inset(0 100% 0 0);
         animation: dotdotdot 1s steps(4) infinite;
     }
@@ -375,17 +455,47 @@ input[type="search"].dark::-webkit-search-cancel-button {
 }
 
 @keyframes bouncydots {
-    20%{background-position:0%   0%, 50%  50%,100%  50%}
-    40%{background-position:0% 100%, 50%   0%,100%  50%}
-    60%{background-position:0%  50%, 50% 100%,100%   0%}
-    80%{background-position:0%  50%, 50%  50%,100% 100%}
+    20% {
+        background-position: 0% 0%, 50% 50%, 100% 50%
+    }
+
+    40% {
+        background-position: 0% 100%, 50% 0%, 100% 50%
+    }
+
+    60% {
+        background-position: 0% 50%, 50% 100%, 100% 0%
+    }
+
+    80% {
+        background-position: 0% 50%, 50% 50%, 100% 100%
+    }
 }
 
 @keyframes blinkydots {
-    0%  {box-shadow: 20px 0 #000, -20px 0 $accent-color; background: #000 }
-    33% {box-shadow: 20px 0 #000, -20px 0 $accent-color; background: $accent-color}
-    66% {box-shadow: 20px 0 $accent-color, -20px 0 #000; background: $accent-color}
-    100%{box-shadow: 20px 0 $accent-color, -20px 0 #000; background: #000 }
+    0% {
+        box-shadow: 20px 0 #000, -20px 0 $accent-color;
+        background: #000
+    }
+
+    33% {
+        box-shadow: 20px 0 #000, -20px 0 $accent-color;
+        background: $accent-color
+    }
+
+    66% {
+        box-shadow: 20px 0 $accent-color, -20px 0 #000;
+        background: $accent-color
+    }
+
+    100% {
+        box-shadow: 20px 0 $accent-color, -20px 0 #000;
+        background: #000
+    }
 }
 
-@keyframes dotdotdot {to{clip-path: inset(0 -34% 0 0)}}
+@keyframes dotdotdot {
+    to {
+        clip-path: inset(0 -34% 0 0)
+    }
+}

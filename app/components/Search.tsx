@@ -8,6 +8,7 @@ import FullTextSearch from '@/app/components/FullTextSearch';
 import VectorSearch from '@/app/components/VectorSearch';
 import { DotLoader } from '@/app/components/Loader';
 import ErrorMessage from '@/app/components/Error';
+import SimilarVectorDataSearch from './SimilarVectorDataSearch';
 
 // Stuff that make stuff happen
 
@@ -62,6 +63,7 @@ const Search = () => {
                 <button type='submit'><span className='btntext'>Search</span></button>
             </form>
             { !isReady ? <DotLoader style='dotdotdot'/> : 
+                searchParams.get('simDataset') ? <SimilarVectorDataSearch keywords={searchParams.get('simDataset')?.toString() as string} onErrorHandler={onErrorHandler}/> :
                 searchParams.get('mode')?.toString() === 'vector' ? <VectorSearch keywords={searchParams.get('query')?.toString() as string} onErrorHandler={onErrorHandler}/> : <FullTextSearch keywords={searchParams.get('query')?.toString() as string} onErrorHandler={onErrorHandler}/> 
             }
         </section>
