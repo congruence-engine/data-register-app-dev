@@ -42,18 +42,18 @@ const SimilarVectorDataSearch = (props:{keywords:string; onErrorHandler:(error:o
 
             setLoadingMessage('Searching...');
 
-            console.log(keywords)
+            // console.log(keywords)
 
             const storedData = getStoredData();
 
-            console.log('All stored data')
-            console.log(storedData)
+            // console.log('All stored data')
+            // console.log(storedData)
 
-            console.log('Current data item')
+            // console.log('Current data item')
             const selectedTargetSimilarityDataItem = storedData.filter((storedItem) => {
               return storedItem.id == keywords
             })[0].embeddings
-            console.log(selectedTargetSimilarityDataItem)
+            // console.log(selectedTargetSimilarityDataItem)
 
             const cosineSims: { id: string; cosine: number }[] = []
             storedData.forEach((dataItem)=>{
@@ -66,8 +66,8 @@ const SimilarVectorDataSearch = (props:{keywords:string; onErrorHandler:(error:o
             cosineSims.forEach((consineItem) => {
                 onlyIds.push(consineItem.id)
             })
-            console.log(cosineSims)
-            console.log(onlyIds)
+            // console.log(cosineSims)
+            // console.log(onlyIds)
             setData(hydrateEntities(onlyIds));
             setLoading(false);
 

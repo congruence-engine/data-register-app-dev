@@ -81,7 +81,7 @@ const VectorSearch = (props:{keywords:string; onErrorHandler:(error:object)=>voi
 
             const cosineSims: { id: string; cosine: number }[] = []
 
-            console.log(storedData)
+            // console.log(storedData)
 
             await storedData.forEach(async (dataItem)=>{
                 cosineSims.push({id: dataItem.id, cosine: await cosinesim(dataItem.embeddings!, searchEmbedding[0]) })
