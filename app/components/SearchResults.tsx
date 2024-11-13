@@ -2,10 +2,11 @@
 
 import { FormEvent } from 'react';
 import { CEEntity } from '@/app/components/Data';
+import Accordion from './Accordion';
 
 const pluralize = (count:number, string:string, suffix:string = 's') => `${count} ${string}${count !== 1 ? suffix : ''}`;
 
-const SearchResults = (props:{ keywords:string; data:CEEntity[]; searchMode:string }) => {
+const SearchResults = (props:{ keywords:string; data:CEEntity[]; searchMode:'keywordSearch'|'keywordVectorSearch'|'itemVectorSearch' }) => {
 
     const toggleLayout = (event:FormEvent) => {
     
@@ -41,6 +42,7 @@ const SearchResults = (props:{ keywords:string; data:CEEntity[]; searchMode:stri
                 </div>
                 : null }
             </div>
+            <Accordion typeOfSearch={props.searchMode}/>
             <div id='search-results-content'>
                 { props.data.length ? 
                     // <ol className={'tile' + (props.searchMode == 'itemVectorSearch' ? ' itemVectorSearch' : '')}>
