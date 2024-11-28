@@ -23,8 +23,6 @@ const VectorSearch = (props:{keywords:string; onErrorHandler:(error:object)=>voi
         const generateEmbeddings = async () => {
             const storedData:CEEntity[] = await getStoredData();
 
-            
-            // const tempText = generateTextStructureForEmbeddings(storedData)
             // Add embeddings if not present already
             const hasEmbeddings = storedData.filter((o) => {
                 return o.hasOwnProperty('embeddings');
@@ -42,18 +40,6 @@ const VectorSearch = (props:{keywords:string; onErrorHandler:(error:object)=>voi
 
                 await setStoredData(storedData)
             }
-                // await generatedEmbeddings.forEach(embedding => {
-                //     )
-                // })    
-
-            // generateEmbeddings().then(embeddings => {
-            //     storedData.map((item, index) => {
-            //         item.embeddings = embeddings[index]
-            //     })
-            //     setStoredData(storedData);
-            // })
-        
-
         }
 
         
@@ -98,30 +84,6 @@ const VectorSearch = (props:{keywords:string; onErrorHandler:(error:object)=>voi
             setData(hydrateEntities(onlyIds))
 
             setLoading(false)
-
-            // getEmbeddings([keywords]).then(searchEmbedding => {
-                
-            //     console.log(searchEmbedding[0])
-
-            //     const storedData:CEEntity[] = getStoredData();
-                
-            //     const cosineSims: { id: string; cosine: number }[] = []
-            //     storedData.forEach((dataItem)=>{
-            //         cosineSims.push({id: dataItem.id, cosine: cosinesim(dataItem.embeddings!, searchEmbedding[0]) })
-            //     })
-                
-            //     cosineSims.sort((a, b) => (a.cosine < b.cosine ? 1 : -1))
-                
-            //     const onlyIds: string[] = []
-            //     cosineSims.forEach((consineItem) => {
-            //         onlyIds.push(consineItem.id)
-            //     })
-
-            //     console.log(cosineSims)
-            //     console.log(onlyIds)
-            //     setData(hydrateEntities(onlyIds));
-            //     setLoading(false);
-            // })
 
         }
 

@@ -24,7 +24,6 @@ const SimilarVectorDataSearch = (props:{keywords:string; onErrorHandler:(error:o
         }
 
         const storedData:CEEntity[] = getStoredData();
-        // const tempText = generateTextStructureForEmbeddings(storedData)
         // Add embeddings if not present already
         const hasEmbeddings = storedData.filter((o) => {
             return o.hasOwnProperty('embeddings');
@@ -70,32 +69,6 @@ const SimilarVectorDataSearch = (props:{keywords:string; onErrorHandler:(error:o
             // console.log(onlyIds)
             setData(hydrateEntities(onlyIds));
             setLoading(false);
-
-            // if (!hasStoredData()) await setSessionData({onErrorHandler: onErrorHandler});
-
-            // getEmbeddings([keywords]).then(searchEmbedding => {
-                
-            //     console.log(searchEmbedding[0])
-
-            //     const storedData:CEEntity[] = getStoredData();
-                
-            //     const cosineSims: { id: string; cosine: number }[] = []
-            //     storedData.forEach((dataItem)=>{
-            //         cosineSims.push({id: dataItem.id, cosine: cosinesim(dataItem.embeddings!, searchEmbedding[0]) })
-            //     })
-                
-            //     cosineSims.sort((a, b) => (a.cosine < b.cosine ? 1 : -1))
-                
-            //     const onlyIds: string[] = []
-            //     cosineSims.forEach((consineItem) => {
-            //         onlyIds.push(consineItem.id)
-            //     })
-
-            //     console.log(cosineSims)
-            //     console.log(onlyIds)
-            //     setData(hydrateEntities(onlyIds));
-            //     setLoading(false);
-            // })
 
         }
 
