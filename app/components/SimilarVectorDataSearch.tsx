@@ -18,59 +18,74 @@ const SimilarVectorDataSearch = (props:{keywords:string; onErrorHandler:(error:o
         setLoading(true);
         setLoadingMessage('Generating vector embeddings (this may take a while...)');
 
-        const generateEmbeddings = async () => {
-            const embeddings = await getEmbeddings(generateTextStructureForEmbeddings(storedData))
-            return embeddings
-        }
+        const storedData:CEEntity[] = getStoredData()
 
-        const storedData:CEEntity[] = getStoredData();
-        // Add embeddings if not present already
-        const hasEmbeddings = storedData.filter((o) => {
-            return o.hasOwnProperty('embeddings');
-        }).length > 0;
-        if (!hasEmbeddings) {
-            generateEmbeddings().then(embeddings => {
-                storedData.map((item, index) => {
-                    item.embeddings = embeddings[index]
+        const generateEmbeddings = async () => {
+            const storedData:CEEntity[] = await getStoredData();
+
+            // Add embeddings if not present already
+            const hasEmbeddings = storedData.filter((o) => {
+                return o.hasOwnProperty('embeddings');
+            }).length > 0;
+
+            if (!hasEmbeddings) {
+
+                setLoadingMessage('Generating vector embeddings (this may take a while...)');
+
+                const generatedEmbeddings = await getEmbeddings(generateTextStructureForEmbeddings(storedData))
+
+                await storedData.map((item, index) => {
+                    item.embeddings = generatedEmbeddings[index]
                 })
-                setStoredData(storedData);
-            })
+
+                await setStoredData(storedData)
+            }
         }
 
         const search = async (keywords:string) => {
 
             setLoadingMessage('Searching...');
 
-            // console.log(keywords)
+            let storedData:CEEntity[] = await getStoredData()
 
-            const storedData = getStoredData();
+            const hasEmbeddings = await storedData.filter((o) => {
+                return o.hasOwnProperty('embeddings');
+            }).length > 0;
 
-            // console.log('All stored data')
-            // console.log(storedData)
+            if (!hasEmbeddings) {
+                await generateEmbeddings()
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const storedData:CEEntity[] = await getStoredData()
+            }
 
-            // console.log('Current data item')
+            storedData = await getStoredData()
+
             const selectedTargetSimilarityDataItem = storedData.filter((storedItem) => {
               return storedItem.id == keywords
             })[0].embeddings
             // console.log(selectedTargetSimilarityDataItem)
 
             const cosineSims: { id: string; cosine: number }[] = []
-            storedData.forEach((dataItem)=>{
-                cosineSims.push({id: dataItem.id, cosine: cosinesim(dataItem.embeddings!, selectedTargetSimilarityDataItem!) })
+            
+            await storedData.forEach(async (dataItem)=>{
+                cosineSims.push({id: dataItem.id, cosine: await cosinesim(dataItem.embeddings!, selectedTargetSimilarityDataItem!) })
             })
             
             cosineSims.sort((a, b) => (a.cosine < b.cosine ? 1 : -1))
             
             const onlyIds: string[] = []
+
             cosineSims.forEach((consineItem) => {
                 onlyIds.push(consineItem.id)
-            })
-            // console.log(cosineSims)
-            // console.log(onlyIds)
+            }) 
+
             setData(hydrateEntities(onlyIds));
+
             setLoading(false);
 
         }
+
+        generateEmbeddings()
 
         if (props.keywords && props.keywords.length) search(props.keywords);
         else {
