@@ -24,7 +24,7 @@ const Accordion = (props: { typeOfSearch: 'keywordSearch'|'keywordVectorSearch'|
       </p>
     </>
 
-  const fullTextSearchTitle = <>{pluralize(props.data.length, 'record')} found using Full Text Search.</>
+  const fullTextSearchTitle = <div>{pluralize(props.data.length, 'record')} found using Full Text Search with keywords: <em>{props.keywords}</em>.</div>
 
   const keywordVectorSearchInfo = 
     <>
@@ -37,7 +37,7 @@ const Accordion = (props: { typeOfSearch: 'keywordSearch'|'keywordVectorSearch'|
       </p>
     </>
 
-  const keywordVectorSearchTitle = <div>Showing all {props.data.length} items in order of cosine similarity to keywords: <em>{props.keywords}</em></div>
+  const keywordVectorSearchTitle = <div>Showing all {props.data.length} items in order of similarity to keywords: <em>{props.keywords}</em></div>
 
   const itemVectorSearchInfo = 
   <>
@@ -50,7 +50,7 @@ const Accordion = (props: { typeOfSearch: 'keywordSearch'|'keywordVectorSearch'|
     </p>
   </>
 
-  const itemVectorSearchTitle = <div>Showing all {props.data.length} items in order of cosine similarity to dataset: <em><span aria-details={props.data[0].id}> {props.data[0].label} </span></em></div>
+  const itemVectorSearchTitle = <div>Showing all {props.data.length} items in order of similarity to the selected dataset: <em><span aria-details={props.data[0].id}> {props.data[0].label} </span></em></div>
 
   const defaultFullTextSearchTitle = <>Showing all {props.data.length} records.</>
 
