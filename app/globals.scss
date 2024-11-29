@@ -78,6 +78,22 @@ main {
 
 footer {
     background-color: var(--foreground);
+
+    a {
+        @apply hover:text-#{$accent-color-tailwind} hover:decoration-#{$accent-color-tailwind};
+        color: var(--background);
+        transition: 0.25s;
+    }
+
+    p {
+        color: var(--background);
+    }
+
+    .footer-container {
+        @apply flex flex-row justify-between;
+    }
+
+    .footer-credits {}
 }
 
 .container {
