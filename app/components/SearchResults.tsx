@@ -4,7 +4,7 @@ import { FormEvent } from 'react';
 import { CEEntity } from '@/app/components/Data';
 import Accordion from './Accordion';
 
-const pluralize = (count:number, string:string, suffix:string = 's') => `${count} ${string}${count !== 1 ? suffix : ''}`;
+// const pluralize = (count:number, string:string, suffix:string = 's') => `${count} ${string}${count !== 1 ? suffix : ''}`;
 
 const SearchResults = (props:{ keywords:string; data:CEEntity[]; searchMode:'keywordSearch'|'keywordVectorSearch'|'itemVectorSearch' }) => {
 
@@ -26,13 +26,15 @@ const SearchResults = (props:{ keywords:string; data:CEEntity[]; searchMode:'key
     
     return (
         <div id='search-results'>
+            <Accordion typeOfSearch={props.searchMode} data={props.data} keywords={props.keywords}/>
             <div id='search-results-header'>
-                <div id='display-status'>
+                {/* <div id='display-status'>
                     <p role="status">{ props.searchMode == 'itemVectorSearch' ? 
                         <>Showing {props.data.length} items in order of cosine similarity to <strong><span aria-details={props.data[0].id}> {props.data[0].label} </span></strong></>:  
                         props.keywords && props.keywords?.length ? `${pluralize(props.data.length, 'record')} found.` : `Showing all ${props.data.length} records.` }
                     </p>
-                </div>
+                </div> */}
+                {/* <Accordion typeOfSearch={props.searchMode} data={props.data} keywords={props.keywords}/> */}
                 {props.data.length ? 
                 <div id='display-options' role='menu'>
                     <p>Layout: </p>
@@ -41,7 +43,7 @@ const SearchResults = (props:{ keywords:string; data:CEEntity[]; searchMode:'key
                 </div>
                 : null }
             </div>
-            <Accordion typeOfSearch={props.searchMode} data={props.data} keywords={props.keywords}/>
+            
             <div id='search-results-content'>
                 { props.data.length ? 
                     // <ol className={'tile' + (props.searchMode == 'itemVectorSearch' ? ' itemVectorSearch' : '')}>

@@ -208,7 +208,7 @@ button {
             }
         }
 
-        &>#display-search-information {
+        &>#search-results-information {
             button {
                 @apply flex justify-between w-full
             }
@@ -264,9 +264,10 @@ button {
                 }
 
             }
+
         }
 
-        &>#display-search-information {
+        &>#search-results-information {
             @apply py-1 border-2 border-solid border-gray-200;
 
             button {
