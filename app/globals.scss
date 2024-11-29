@@ -80,20 +80,40 @@ footer {
     background-color: var(--foreground);
 
     a {
-        @apply hover:text-#{$accent-color-tailwind} hover:decoration-#{$accent-color-tailwind};
+        // @apply hover:text-#{$accent-color-tailwind} hover:decoration-#{$accent-color-tailwind};
+        // decoration-none;
+        text-decoration: none;
         color: var(--background);
         transition: 0.25s;
+
+        &:hover {
+            text-decoration: underline;
+        }
     }
 
     p {
         color: var(--background);
+        font-size: 0.875rem;
     }
 
     .footer-container {
         @apply md:flex md:flex-row md:justify-between grid grid-cols-1;
-    }
 
-    .footer-credits {}
+        .footer-credits,
+        .footer-information {
+            p {
+                @apply m-0;
+            }
+
+            p:first-child {
+                @apply mt-4;
+            }
+
+            p:last-child {
+                @apply mb-4;
+            }
+        }
+    }
 }
 
 .container {
@@ -430,7 +450,7 @@ button {
         }
 
         .vectorSim {
-            @apply px-2 py-0.5 form-input mb-2 no-underline hover:bg-#{$accent-color-tailwind};
+            @apply px-2 py-0.5 form-input mb-4 no-underline hover:bg-#{$accent-color-tailwind};
             background-color: var(--foreground);
             color: var(--background);
             border: none;

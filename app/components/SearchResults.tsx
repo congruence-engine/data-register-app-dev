@@ -28,13 +28,6 @@ const SearchResults = (props:{ keywords:string; data:CEEntity[]; searchMode:'key
         <div id='search-results'>
             <Accordion typeOfSearch={props.searchMode} data={props.data} keywords={props.keywords}/>
             <div id='search-results-header'>
-                {/* <div id='display-status'>
-                    <p role="status">{ props.searchMode == 'itemVectorSearch' ? 
-                        <>Showing {props.data.length} items in order of cosine similarity to <strong><span aria-details={props.data[0].id}> {props.data[0].label} </span></strong></>:  
-                        props.keywords && props.keywords?.length ? `${pluralize(props.data.length, 'record')} found.` : `Showing all ${props.data.length} records.` }
-                    </p>
-                </div> */}
-                {/* <Accordion typeOfSearch={props.searchMode} data={props.data} keywords={props.keywords}/> */}
                 {props.data.length ? 
                 <div id='display-options' role='menu'>
                     <p>Layout: </p>
@@ -46,7 +39,6 @@ const SearchResults = (props:{ keywords:string; data:CEEntity[]; searchMode:'key
             
             <div id='search-results-content'>
                 { props.data.length ? 
-                    // <ol className={'tile' + (props.searchMode == 'itemVectorSearch' ? ' itemVectorSearch' : '')}>
                     <ol className={'tile ' + props.searchMode}>
                         { props.data.map((item) => (
                             <li key={item.id} id={item.id} className='item'>
