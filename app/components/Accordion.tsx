@@ -1,7 +1,10 @@
 import React, { useState } from "react";
+import { CEEntity } from "./Data";
 
-const Accordion = (props: { typeOfSearch: 'keywordSearch'|'keywordVectorSearch'|'itemVectorSearch'|null }) => {
+const Accordion = (props: { typeOfSearch: 'keywordSearch'|'keywordVectorSearch'|'itemVectorSearch'|null, data:CEEntity[], keywords: string }) => {
   const [accordionOpen, setAccordionOpen] = useState(false);
+
+  const pluralize = (count:number, string:string, suffix:string = 's') => `${count} ${string}${count !== 1 ? suffix : ''}`;
 
   const fullTextSearchInfo = 
     <>
@@ -21,6 +24,8 @@ const Accordion = (props: { typeOfSearch: 'keywordSearch'|'keywordVectorSearch'|
       </p>
     </>
 
+  const fullTextSearchTitle = <>{pluralize(props.data.length, 'record')} found using Full Text Search.</>
+
   const keywordVectorSearchInfo = 
     <>
       <p>
@@ -32,26 +37,30 @@ const Accordion = (props: { typeOfSearch: 'keywordSearch'|'keywordVectorSearch'|
       </p>
     </>
 
-const itemVectorSearchInfo = 
-<>
-  <p>
-    Item Vector Search compares a single dataset to all other datasets in order to find the most similar ones.
-    <br/><br/>
-    This method uses vector embeddings, previously generated for the Keyword Vector Search, to represent each dataset numerically and measures similarity by calculating the cosine distance between vectors. It allows the exploration of relationships between datasets based on content similarity.
-    <br/><br/>
-    This type of search is particularly useful for discovering datasets with closely related content.
-  </p>
-</>
+  const keywordVectorSearchTitle = <div>Showing all {props.data.length} items in order of cosine similarity to keywords: <em>{props.keywords}</em></div>
+
+  const itemVectorSearchInfo = 
+  <>
+    <p>
+      Item Vector Search compares a single dataset to all other datasets in order to find the most similar ones.
+      <br/><br/>
+      This method uses vector embeddings, previously generated for the Keyword Vector Search, to represent each dataset numerically and measures similarity by calculating the cosine distance between vectors. It allows the exploration of relationships between datasets based on content similarity.
+      <br/><br/>
+      This type of search is particularly useful for discovering datasets with closely related content.
+    </p>
+  </>
+
+  const itemVectorSearchTitle = <div>Showing all {props.data.length} items in order of cosine similarity to dataset: <em><span aria-details={props.data[0].id}> {props.data[0].label} </span></em></div>
+
+  const defaultFullTextSearchTitle = <>Showing all {props.data.length} records.</>
+
 
   const additionalInfoDict = {
-    'keywordSearch': {title: 'More information about Full Text Search', description: fullTextSearchInfo},
-    'itemVectorSearch': {title: 'More information about Vector Similarity Search', description: itemVectorSearchInfo},
-    'keywordVectorSearch': {title: 'More information about Keyword Vector Search', description: keywordVectorSearchInfo},
-    null: {title: 'More information about Full Text Search', description: fullTextSearchInfo},
+    'keywordSearch': {title: fullTextSearchTitle, description: fullTextSearchInfo},
+    'itemVectorSearch': {title: itemVectorSearchTitle, description: itemVectorSearchInfo},
+    'keywordVectorSearch': {title: keywordVectorSearchTitle, description: keywordVectorSearchInfo},
+    'none': {title: defaultFullTextSearchTitle, description: fullTextSearchInfo},
   }
-
-  // console.log(additionalInfoDict['keywordSearch'])
-  // console.log(additionalInfoDict['itemVectorSearch'])
 
   if (!props.typeOfSearch) return null
 
@@ -60,7 +69,7 @@ const itemVectorSearchInfo =
       <button
         onClick={() => setAccordionOpen(!accordionOpen)}
       >
-        {additionalInfoDict[props.typeOfSearch].title}
+        {props.keywords ? additionalInfoDict[props.typeOfSearch].title : additionalInfoDict['none'].title}
         {accordionOpen ? <span>-</span> : <span>+</span>}
       </button>
       <div id='accordion' className={` ${accordionOpen ? "open" : "closed"}`}>

@@ -23,8 +23,6 @@ const SearchResults = (props:{ keywords:string; data:CEEntity[]; searchMode:'key
         target.classList.add('active');
         
     }
-
-    // const itemVectorSearchHeader = 
     
     return (
         <div id='search-results'>
@@ -32,7 +30,8 @@ const SearchResults = (props:{ keywords:string; data:CEEntity[]; searchMode:'key
                 <div id='display-status'>
                     <p role="status">{ props.searchMode == 'itemVectorSearch' ? 
                         <>Showing {props.data.length} items in order of cosine similarity to <strong><span aria-details={props.data[0].id}> {props.data[0].label} </span></strong></>:  
-                        props.keywords && props.keywords?.length ? `${pluralize(props.data.length, 'record')} found.` : `Showing all ${props.data.length} records.` }</p>
+                        props.keywords && props.keywords?.length ? `${pluralize(props.data.length, 'record')} found.` : `Showing all ${props.data.length} records.` }
+                    </p>
                 </div>
                 {props.data.length ? 
                 <div id='display-options' role='menu'>
@@ -42,7 +41,7 @@ const SearchResults = (props:{ keywords:string; data:CEEntity[]; searchMode:'key
                 </div>
                 : null }
             </div>
-            <Accordion typeOfSearch={props.searchMode}/>
+            <Accordion typeOfSearch={props.searchMode} data={props.data} keywords={props.keywords}/>
             <div id='search-results-content'>
                 { props.data.length ? 
                     // <ol className={'tile' + (props.searchMode == 'itemVectorSearch' ? ' itemVectorSearch' : '')}>
